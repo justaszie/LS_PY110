@@ -27,7 +27,6 @@ Detailed Algorithm - get word lenght
 """ 
 def get_word_length(word):
     length = len([char for char in word if char.isalpha()])
-    
     return length 
 
 def word_sizes(text):
