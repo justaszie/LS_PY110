@@ -10,6 +10,7 @@ PROBLEM
     - Assumption: Empty lists in input return empty list 
 - Questions
     - Empty lists
+    - Numbers = Only integers? 
 
 EXAMPLES
 1) 
