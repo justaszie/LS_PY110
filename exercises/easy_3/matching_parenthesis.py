@@ -106,52 +106,40 @@ ALGORITHM
 """
 
 def is_balanced_fe(string):
-    pairs = {'(': ')', '[': ']', '{': '}', '\'': '\'', '\"': '\"'}
-    stack = []
+    opening_characters = []
+
+    closing = {
+        ')': '(',
+        ']': '[',
+        '}': '{',
+    }
 
     for char in string:
-        if char in pairs.keys():
-            stack.append(char)
-        if char in pairs.values():
-            if not stack or pairs.get(stack.pop()) != char:
-                return False
-
-    return not stack
-
-    # opening_characters = []
-
-    # closing = {
-    #     ')': '(',
-    #     ']': '[',
-    #     '}': '{',
-    # }
-
-    # for char in string:
-    #     if char in closing.values():
-    #         opening_characters.append(char)
-    #     elif char in closing.keys():
-    #         if closing[char] in opening_characters:
-    #             # If a closing is found, remove 1st occurence of the relevant opening 
-    #             opening_characters.remove(closing[char])
-    #         else:
-    #             return False # A closing is found before an opening
-    #     # If encountered a single / double quote and it's already opened, remove it. 
-    #     # Otherwise, log an opening
-    #     elif char in ["'", '"']:
-    #         if char not in opening_characters:
-    #             opening_characters.append(char)
-    #         else:
-    #             opening_characters.remove(char)
+        if char in closing.values():
+            opening_characters.append(char)
+        elif char in closing.keys():
+            if closing[char] in opening_characters:
+                # If a closing is found, remove 1st occurence of the corresponding opening 
+                opening_characters.remove(closing[char])
+            else:
+                return False # A closing is found before an opening
+        # If encountered a single / double quote and it's already opened, remove it. 
+        # Otherwise, keep track of an opening
+        elif char in ["'", '"']:
+            if char not in opening_characters:
+                opening_characters.append(char)
+            else:
+                opening_characters.remove(char)
     
-    # # Return True if there are no opening characters without closing 
-    # return not opening_characters
+    # Return True if there are no opening characters without closing 
+    return not opening_characters
 
 
-print(is_balanced_fe("What [(is] )this?") == True)
-# print(is_balanced_fe("What is} this?") == False)
-# print(is_balanced_fe("What {is this?") == False)
-# print(is_balanced_fe("({What} (is this))?") == True)
-# print(is_balanced_fe("((What)) (is this))?") == False)
-# print(is_balanced_fe("Hey!") == True)
-# print(is_balanced_fe(")Hey!(") == False)
-# print(is_balanced_fe("What ({is]}) up(") == False)
+print(is_balanced_fe("What [is] this?") == True)
+print(is_balanced_fe("What is} this?") == False)
+print(is_balanced_fe("What {is this?") == False)
+print(is_balanced_fe("({What} (is this))?") == True)
+print(is_balanced_fe("((What)) (is this))?") == False)
+print(is_balanced_fe("Hey!") == True)
+print(is_balanced_fe(")Hey!(") == False)
+print(is_balanced_fe("What ({is]}) up(") == False)
