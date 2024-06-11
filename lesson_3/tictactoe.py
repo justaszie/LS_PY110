@@ -1,10 +1,12 @@
 import random
 import os
 
-PLAYER_MARK = 'X'
-COMPUTER_MARK = 'O'
-AVAILABLE_MARK = ' '
+PLAYER_MARKER = 'X'
+COMPUTER_MARKER = 'O'
+AVAILABLE_MARKER = ' '
 GAMES_TO_MATCH = 5
+OPTIMAL_SQUARE = 5
+GAME_START = 'choose'
 
 def display_board(board):
     clear_screen()
@@ -26,7 +28,7 @@ def display_board(board):
 
 
 def initialize_board():
-    return {number: AVAILABLE_MARK for number in range(1,10)}
+    return {number: AVAILABLE_MARKER for number in range(1,10)}
 
 
 def prompt(message):
@@ -44,9 +46,18 @@ def get_available_squares(board):
     return [square
             for square, value
             in board.items()
-            if value == AVAILABLE_MARK]
+            if value == AVAILABLE_MARKER]
 
-# TODO - rename to marks square
+
+def alternate_player(current_player):
+    return 'computer' if current_player == 'player' else 'player'
+
+
+def choose_square(board, current_player):
+    (player_marks_square(board) 
+     if current_player == 'player' 
+     else computer_marks_square(board))
+
 def player_marks_square(board):
     available_squares = [str(square)
                          for square
@@ -68,14 +79,48 @@ def player_marks_square(board):
 
         player_input = input().strip()
 
-    board[int(player_input)] = PLAYER_MARK
+    board[int(player_input)] = PLAYER_MARKER
+
+def get_strategic_square(line, board, strategy):
+    # Depending on strategy we're checking if
+    # 2 squares in a row are marked by player or computer
+    if strategy == 'defense':
+        marker_to_check = PLAYER_MARKER
+    elif strategy == 'offense':
+        marker_to_check = COMPUTER_MARKER
+
+    markers_in_line = [board[square] for square in line]
+    if markers_in_line.count(marker_to_check) == 2:
+        for square in line:
+            if board[square] == AVAILABLE_MARKER:
+                return square
+
+    return None
 
 
 def computer_marks_square(board):
     available_squares = get_available_squares(board)
-    if available_squares:
-        computer_selection = random.choice(available_squares)
-        board[computer_selection] = COMPUTER_MARK
+    winning_lines = get_winning_lines()
+
+    for line in winning_lines:
+        square = get_strategic_square(line, board, 'offense')
+        if square:
+            break
+
+    if not square:
+        for line in winning_lines:
+            square = get_strategic_square(line, board, 'defense')
+            if square:
+                break
+
+
+    if not square and board[OPTIMAL_SQUARE] == AVAILABLE_MARKER:
+        square = OPTIMAL_SQUARE
+
+    if not square:
+        square = random.choice(available_squares)
+
+    board[square] = COMPUTER_MARKER
 
 
 def play_again():
@@ -102,15 +147,14 @@ def board_full(board):
 
 # Check if anyone has all marks on the given line
 def line_winner(board, line):
-    if all([board[square] == PLAYER_MARK for square in line]):
+    if all([board[square] == PLAYER_MARKER for square in line]):
         return 'player'
-    if all([board[square] == COMPUTER_MARK for square in line]):
+    if all([board[square] == COMPUTER_MARKER for square in line]):
         return 'computer'
 
     return None
 
-
-def get_game_winner(board):
+def get_winning_lines():
     horizontal_lines = [
         [starting_square, starting_square + 1, starting_square + 2]
         for starting_square in [1, 4, 7]
@@ -123,7 +167,13 @@ def get_game_winner(board):
 
     winning_lines = horizontal_lines + vertical_lines + diagonal_lines
 
-    for line in winning_lines:
+    return winning_lines
+
+
+def get_game_winner(board):
+    for line in get_winning_lines():
+        # TODO - ask reviewer about this pattern. Function get X that
+        # returns None. we check, if X, then return X.
         winner = line_winner(board, line)
         if winner:
             return winner
@@ -132,7 +182,6 @@ def get_game_winner(board):
     return None
 
 def display_game_winner(winner):
-    # TODO - refactor to game winner instead
     print('')
     if winner == 'computer':
         prompt("Computer wins the game. Better luck next time")
@@ -161,26 +210,23 @@ def join_or(squares, separator = ', ', join_word = 'or'):
 
     return result
 
-def play_a_game():
+def play_a_game(current_player):
     board = initialize_board()
     #  Keep playing until there's a winner or the board is full
     while True:
         display_board(board)
-        player_marks_square(board)
+        choose_square(board, current_player)
 
         winner = get_game_winner(board)
         if winner or board_full(board):
             break
 
-        computer_marks_square(board)
-
-        winner = get_game_winner(board)
-        if winner or board_full(board):
-            break
+        current_player = alternate_player(current_player)
 
     display_board(board)
 
-    #  TODO - make sure to ask reviewer - is it better to do these displays in the main function
+    #  TODO - make sure to ask reviewer - is it better to do these displays
+    #  in the main function
     if winner:
         display_game_winner(winner)
     else:
@@ -188,11 +234,13 @@ def play_a_game():
 
     return winner
 
+
 def display_match_winner(winner):
     if winner == 'computer':
         prompt("Computer wins the match. Better luck next time")
     else:
         prompt("You win the match! Congratulations!")
+
 
 def display_current_scores(computer_score, player_score):
     prompt(f'Current Score. Player: {player_score} Game(s) '
@@ -206,6 +254,17 @@ def display_welcome_message():
     input('Press Enter key to continue.\n')
     # prompt('Welcome to Tic-Tac-Toe!')
 
+
+def get_game_start_selection():
+    prompt('Who will start? Enter 1 for player, 2 for computer')
+    game_start_selection = input().strip()
+    while game_start_selection not in ['1','2']:
+        prompt('Enter 1 for player, 2 for computer')
+        game_start_selection = input().strip()
+
+    return 'player' if game_start_selection == '1' else 'computer'
+
+
 # Main game
 def play_tic_tac_toe():
     computer_score = 0
@@ -213,17 +272,21 @@ def play_tic_tac_toe():
 
     display_welcome_message()
 
+    game_start_flag = (get_game_start_selection() 
+                            if GAME_START  == 'choose' 
+                            else GAME_START)
+
     # Keep playing until player decides to stop
     while True:
-        game_outcome = play_a_game()
+        game_outcome = play_a_game(game_start_flag)
 
         if game_outcome == 'computer':
             computer_score += 1
         elif game_outcome == 'player':
             player_score += 1
-        
+
         display_current_scores(computer_score, player_score)
-        
+
         if computer_score == GAMES_TO_MATCH or player_score == GAMES_TO_MATCH:
             display_match_winner(game_outcome)
             computer_score, player_score = 0, 0
