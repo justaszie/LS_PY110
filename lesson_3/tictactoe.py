@@ -54,9 +54,10 @@ def alternate_player(current_player):
 
 
 def choose_square(board, current_player):
-    (player_marks_square(board) 
-     if current_player == 'player' 
-     else computer_marks_square(board))
+    if current_player == 'player':
+        player_marks_square(board)
+    else:
+        computer_marks_square(board)
 
 def player_marks_square(board):
     available_squares = [str(square)
@@ -172,8 +173,6 @@ def get_winning_lines():
 
 def get_game_winner(board):
     for line in get_winning_lines():
-        # TODO - ask reviewer about this pattern. Function get X that
-        # returns None. we check, if X, then return X.
         winner = line_winner(board, line)
         if winner:
             return winner
@@ -201,7 +200,8 @@ def join_or(squares, separator = ', ', join_word = 'or'):
         return f' {join_word} '.join(
             [str(square) for square in squares])
 
-    # Comprehension will return '{join word} {last_square}' for last square
+    # Comprehension will return '{join word} {last_square}' for the
+    # last square
     result = separator.join([
                 str(square) if idx < (len(squares) - 1)
                 else f'{join_word} ' + str(square)
@@ -209,30 +209,6 @@ def join_or(squares, separator = ', ', join_word = 'or'):
             ])
 
     return result
-
-def play_a_game(current_player):
-    board = initialize_board()
-    #  Keep playing until there's a winner or the board is full
-    while True:
-        display_board(board)
-        choose_square(board, current_player)
-
-        winner = get_game_winner(board)
-        if winner or board_full(board):
-            break
-
-        current_player = alternate_player(current_player)
-
-    display_board(board)
-
-    #  TODO - make sure to ask reviewer - is it better to do these displays
-    #  in the main function
-    if winner:
-        display_game_winner(winner)
-    else:
-        display_tie()
-
-    return winner
 
 
 def display_match_winner(winner):
@@ -252,7 +228,6 @@ def display_welcome_message():
     prompt('Welcome to Tic-Tac-Toe! '
           f'Whoever wins {GAMES_TO_MATCH} games, wins the match.')
     input('Press Enter key to continue.\n')
-    # prompt('Welcome to Tic-Tac-Toe!')
 
 
 def get_game_start_selection():
@@ -265,18 +240,42 @@ def get_game_start_selection():
     return 'player' if game_start_selection == '1' else 'computer'
 
 
-# Main game
+def play_a_game(current_player):
+    board = initialize_board()
+    #  Keep playing rounds until there's a winner or the board is full
+    while True:
+        display_board(board)
+
+        choose_square(board, current_player)
+
+        winner = get_game_winner(board)
+        if winner or board_full(board):
+            break
+
+        current_player = alternate_player(current_player)
+
+    display_board(board)
+
+    if winner:
+        display_game_winner(winner)
+    else:
+        display_tie()
+
+    return winner
+
+
+# Main function
 def play_tic_tac_toe():
     computer_score = 0
     player_score = 0
 
     display_welcome_message()
 
-    game_start_flag = (get_game_start_selection() 
-                            if GAME_START  == 'choose' 
+    game_start_flag = (get_game_start_selection()
+                            if GAME_START  == 'choose'
                             else GAME_START)
 
-    # Keep playing until player decides to stop
+    # Keep playing games until player decides to stop
     while True:
         game_outcome = play_a_game(game_start_flag)
 
