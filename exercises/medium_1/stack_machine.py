@@ -71,6 +71,21 @@ ALGORITHM
 
 IMPLEM NOTES
 - potentially use match case 
+
+FURTHER EXPLORATION 
+Refactor the minilang function to include some error handling. 
+In particular, the function should detect and report empty stack conditions 
+(trying to use a value from the stack when there are no values), 
+and invalid tokens in the program. 
+Ideally, the function should return an error message if an error occurs, 
+or None if the program runs successfully.
+
+- Trying to use stack value when there are no values => Invalidate the whole program
+- Return an error message if it happens. Otherwise return None. 
+
+Before instruction to pop value, check that stack is not empty. 
+If it's empty return a string "Program Invalid - Stack Empty" 
+
 """
 
 def minilang(program):
@@ -86,11 +101,14 @@ def minilang(program):
         elif instruction == 'PUSH':
             stack.append(register)
         elif instruction == 'PRINT':
-            print(register)
+            print(f"\n{register}\n")
         elif instruction == 'POP':
             register = stack.pop()
         else:
-            last_stack_element = stack.pop()
+            try:
+                last_stack_element = stack.pop()
+            except IndexError:
+                return "Trying to use empty stack - Program Invalid"
             match instruction:
                 case 'ADD':
                     register += last_stack_element
@@ -107,7 +125,7 @@ def minilang(program):
 # minilang('PRINT')
 # # 0
 
-# minilang('5 PUSH 3 MULT PRINT')
+# minilang('MULT PRINT')
 # # 15
 
 # minilang('5 PRINT PUSH 3 PRINT ADD PRINT')
@@ -128,10 +146,15 @@ def minilang(program):
 # # 6
 
 # minilang('4 PUSH PUSH 7 REMAINDER MULT PRINT')
-# 12
+# # 12
 
-minilang('-3 PUSH 5 SUB PRINT')
-# 8
+# minilang('-3 PUSH 5 SUB PRINT')
+# # 8
 
 # minilang('6 PUSH')
-# (nothing is printed)
+# # (nothing is printed)
+
+
+print(minilang('MULT PRINT'))
+
+print(minilang('-3 PUSH 5 SUB PRINT'))
