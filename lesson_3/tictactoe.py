@@ -304,24 +304,6 @@ def increment_scores(winner, scores):
         scores['player'] += 1
 
 
-def play_a_game(current_player, current_scores):
-    board = initialize_board()
-    #  Keep playing rounds until there's a winner or the board is full
-    while True:
-        display_board(board, current_scores)
-
-        choose_square(board, current_player)
-
-        winner = get_game_winner(board)
-        if winner or board_full(board):
-            break
-
-        current_player = get_alternate_player(current_player)
-
-    display_board(board, current_scores)
-
-    return winner if winner else 'tie'
-
 def initialize_match():
     scores = {
         'player' : 0,
@@ -345,6 +327,25 @@ def initialize_match():
     }
 
     return match_config
+
+
+def play_a_game(current_player, current_scores):
+    board = initialize_board()
+    #  Keep playing rounds until there's a winner or the board is full
+    while True:
+        display_board(board, current_scores)
+
+        choose_square(board, current_player)
+
+        winner = get_game_winner(board)
+        if winner or board_full(board):
+            break
+
+        current_player = get_alternate_player(current_player)
+
+    display_board(board, current_scores)
+
+    return winner if winner else 'tie'
 
 
 # Main function
