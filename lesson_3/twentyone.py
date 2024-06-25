@@ -1,4 +1,5 @@
 import random
+import os
 
 SUITS = ('hearts', 'diamonds', 'clubs', 'spades')
 NUMBER_CARDS= range(2, 11)
@@ -37,16 +38,16 @@ def deal_initial_hand(deck):
 
 
 def get_random_card(deck):
-    available_cards = [ index for index, card in enumerate(deck) if card['available'] ]
+    available_cards = [ card for card in deck if card['available'] ]
 
     if not available_cards:
         return {}
 
-    card_number = random.choice(available_cards)
+    dealt_card = random.choice(available_cards)
 
-    deck[card_number]['available'] = False
+    dealt_card['available'] = False
 
-    return deck[card_number]
+    return dealt_card
 
 
 def calculate_hand_value(hand):
@@ -67,6 +68,7 @@ def calculate_hand_value(hand):
 def compare_cards(player_hand, dealer_hand):
     player_value = calculate_hand_value(player_hand)
     dealer_value = calculate_hand_value(dealer_hand)
+
     if player_value > dealer_value:
         return 'player'
     elif player_value < dealer_value:
@@ -75,17 +77,29 @@ def compare_cards(player_hand, dealer_hand):
         return 'tie'
 
 
+def clear_screen():
+    if os.name == 'nt':
+        os.system('cls')
+    else:
+        os.system('clear')
+
+
 def display_prompt(message):
     print(f'==> {message}')
 
+
+def display_welcome_message():
+    display_prompt('Welcome to 21!\n')
 
 def display_player_hand(hand):
     cards_overview = [f"{card['face'].capitalize()} "
                       f"of {card['suit'].capitalize()}"
                       for card in hand]
+
     hand_value = calculate_hand_value(hand)
 
-    display_prompt(f'You have: {', '.join(cards_overview)} (Score: {hand_value})')
+    display_prompt(f'You have: {', '.join(cards_overview)} '
+                   f'(Score: {hand_value})')
 
 
 def display_dealer_hand(hand, uncovered = False):
@@ -99,9 +113,11 @@ def display_dealer_hand(hand, uncovered = False):
         cards_overview = [f"{card['face'].capitalize()} "
                       f"of {card['suit'].capitalize()}"
                       for card in hand]
+
         hand_value = calculate_hand_value(hand)
 
-        display_prompt(f'Dealer Has: {', '.join(cards_overview)} (Score: {hand_value})')
+        display_prompt(f'Dealer Has: {', '.join(cards_overview)} '
+                       f'(Score: {hand_value})')
 
 
 def display_result(game_outcome):
@@ -160,8 +176,9 @@ def dealer_takes_turn(dealer_hand, deck):
 
 
 def play_21():
-
     while True:
+        display_welcome_message()
+
         deck = initialize_deck()
 
         player_hand = deal_initial_hand(deck)
@@ -192,6 +209,7 @@ def play_21():
             display_prompt('Goodbye then!')
             break
 
+        clear_screen()
+
 
 play_21()
-
