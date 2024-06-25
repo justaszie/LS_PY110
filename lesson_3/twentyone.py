@@ -1,32 +1,10 @@
-""" 
-INITIALIZE DECK 
+import random
 
-{
-    'suit' : hearts/spades/etc.,
-    'face': king, 2, etc.,
-    'value': 2, 10, etc.
-    'state': dealt / available 
-}
-
-## Algorithm   
-1. List possible suits
-2. List possible values. 
-3. Iterate over suits. For each suit.
-    Iterate over values. For each value:
-        - Create a "card" object depending on the value of the face, in 'available' state
-        - Add the card to the list of cards
-    Add ace card 
-
-
-"""
-import random 
-import sys
-
-SUITS = ['hearts', 'diamonds', 'clubs', 'spades']
+SUITS = ('hearts', 'diamonds', 'clubs', 'spades')
 NUMBER_CARDS= range(2, 11)
-NAME_CARDS = ['jack', 'queen', 'king', 'ace']
+NAME_CARDS = ('jack', 'queen', 'king', 'ace')
 INITIAL_HAND_SIZE = 2
-DEALER_HAND_TARGER = 17
+DEALER_HAND_TARGET = 17
 
 
 def initialize_deck():
@@ -51,7 +29,7 @@ def initialize_deck():
             }
             deck.append(card)
 
-    return deck 
+    return deck
 
 
 def deal_initial_hand(deck):
@@ -60,14 +38,14 @@ def deal_initial_hand(deck):
 
 def get_random_card(deck):
     available_cards = [ index for index, card in enumerate(deck) if card['available'] ]
-    
+
     if not available_cards:
         return {}
-    
+
     card_number = random.choice(available_cards)
-    
+
     deck[card_number]['available'] = False
-    
+
     return deck[card_number]
 
 
@@ -111,8 +89,6 @@ def display_player_hand(hand):
 
 
 def display_dealer_hand(hand, uncovered = False):
-    # TESTING ---- 
-    uncovered = True
 
     if not uncovered:
         card_1 = (f"{hand[0]['face'].capitalize()} of "
@@ -128,24 +104,24 @@ def display_dealer_hand(hand, uncovered = False):
         display_prompt(f'Dealer Has: {', '.join(cards_overview)} (Score: {hand_value})')
 
 
-def display_winner(game_outcome):
+def display_result(game_outcome):
     match game_outcome:
         case 'player':
             display_prompt('Congratulations, you won the game!')
         case 'dealer':
-            display_prompt('Sorry, dealer has won!') 
-        case 'tie': 
+            display_prompt('Sorry, dealer has won!')
+        case 'tie':
             display_prompt("It's a tie!")
 
 
 def prompt_player_decision():
     display_prompt('Enter "h" to Hit or "s" to Stay:')
     player_input = input().strip().lower()
-    
+
     while player_input not in ('hit', 'h', 'stay', 's'):
         display_prompt('Invalid entry. Enter "h" to Hit or "s" to Stay')
         player_input = input()
-    
+
     return 'hit' if player_input in ('hit', 'h') else 'stay'
 
 
@@ -170,34 +146,20 @@ def player_takes_turn(player_hand, deck):
             display_player_hand(player_hand)
             if calculate_hand_value(player_hand) > 21:
                 return 'bust'
-            
+
 
 def dealer_takes_turn(dealer_hand, deck):
-    while calculate_hand_value(dealer_hand) < 17:
+    # TODO - display each card that dealer gets when it hits
+    while calculate_hand_value(dealer_hand) < DEALER_HAND_TARGET:
         # TODO ask for advice in code review
         dealer_hand.append(get_random_card(deck))
         if calculate_hand_value(dealer_hand) > 21:
             return 'bust'
-    
+
     return 'stay'
-    
+
 
 def play_21():
-    
-
-    """ 
-    1. Ask player if he wants to hit or stay. 
-    2. If stay, go to "Computer's turn"
-    3. If hit:
-        A. Add a card to player's hand
-        B. Display new hand 
-        C. If hand value > 21:
-            - Display "player bust" result
-            - Go to "Play again?" prompt
-        D. Else:
-            - Go to step 1.
-
-    """
 
     while True:
         deck = initialize_deck()
@@ -209,29 +171,26 @@ def play_21():
         print()
         display_player_hand(player_hand)
 
-        # Player's turn 
+        # Player's turn
         player_outcome = player_takes_turn(player_hand, deck)
-        if player_outcome == 'bust':        
+        if player_outcome == 'bust':
             display_prompt('Sorry! Your hand is a bust!')
         # If player's hand is not a bust, dealer takes its turn
         else:
-            # TODO - dealer's trun function
             dealer_outcome = dealer_takes_turn(dealer_hand, deck)
+
             display_dealer_hand(dealer_hand, uncovered=True)
             if dealer_outcome == 'bust':
                 game_outcome = 'player'
                 display_prompt("Dealer's hand is a bust!")
             else:
-                # TODO - function to compare the hands and return the winner
                 game_outcome = compare_cards(player_hand, dealer_hand)
-            
-            # TODO - display full dealer's hand - maybe option in curent function
-            display_winner(game_outcome)
-        
-        # TODO - get user's choice to play again or not 
+
+            display_result(game_outcome)
+
         if not prompt_play_again():
             display_prompt('Goodbye then!')
-            break 
+            break
 
 
 play_21()
