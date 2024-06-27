@@ -155,6 +155,7 @@ def calculate_hand_value(cards):
 
     ace_cards = [ card['value'] for card in cards
                  if card['face'] == 'ace' ]
+
     for ace in ace_cards:
         if hand_value + 11 <= SCORE_TARGET:
             hand_value += 11
