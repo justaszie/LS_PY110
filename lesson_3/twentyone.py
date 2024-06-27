@@ -112,10 +112,10 @@ def initialize_deck():
             deck.append(card)
 
         for name in NAME_CARDS:
-            card ={
+            card = {
                 'suit': suit,
                 'face': name,
-                'value': 10 if name != 'ace' else 0,
+                'value': 10 if name != 'ace' else 11,
                 'available': True
             }
             deck.append(card)
@@ -180,6 +180,8 @@ def update_scores(round_outcome, scores):
     elif round_outcome == 'player':
         scores['player'] += 1
 
+    return scores
+
 
 def clear_screen():
     if os.name == 'nt':
@@ -196,7 +198,6 @@ def player_takes_turn(player_hand, deck):
         if player_decision == 'stay':
             return 'stay'
         else:
-            # TODO ask for advice in code review if this is fine
             cards.append(get_random_card(deck))
 
             player_hand['value'] = calculate_hand_value(cards)
@@ -210,9 +211,7 @@ def player_takes_turn(player_hand, deck):
 def dealer_takes_turn(dealer_hand, deck):
     cards = dealer_hand['cards']
 
-    # TODO - display each card that dealer gets when it hits
     while dealer_hand['value'] < DEALER_HAND_TARGET:
-        # TODO ask for advice in code review
         cards.append(get_random_card(deck))
         dealer_hand['value'] = calculate_hand_value(cards)
 
@@ -236,19 +235,16 @@ def play_round():
     print()
     display_player_hand(player_hand)
 
-    # Player's turn
     player_outcome = player_takes_turn(player_hand, deck)
     if player_outcome == 'bust':
         display_prompt('Sorry! Your hand is a bust!')
         round_outcome = 'dealer'
-    # If player's hand is not a bust, dealer takes its turn
     else:
         dealer_outcome = dealer_takes_turn(dealer_hand, deck)
-
-        display_dealer_hand(dealer_hand, uncovered=True)
+        display_dealer_hand(dealer_hand, uncovered = True)
         if dealer_outcome == 'bust':
-            round_outcome = 'player'
             display_prompt("Dealer's hand is a bust!")
+            round_outcome = 'player'
         else:
             round_outcome = calculate_round_winner(player_hand, dealer_hand)
 
@@ -257,6 +253,7 @@ def play_round():
 
 def play_21():
     while True:
+        clear_screen()
         display_welcome_message()
 
         scores = initialize_scores()
@@ -264,17 +261,21 @@ def play_21():
         while (scores['player'] < ROUNDS_TO_WIN
                and scores['dealer'] < ROUNDS_TO_WIN):
             round_outcome = play_round()
+
             display_round_result(round_outcome)
-            update_scores(round_outcome, scores)
+
+            scores = update_scores(round_outcome, scores)
+
             display_scores(scores)
 
         print('')
+        # Whoever won the last round is the winner of the game
         display_game_winner(round_outcome)
 
         if not prompt_play_again():
             display_prompt('Goodbye then!')
             break
 
-        clear_screen()
+
 
 play_21()
